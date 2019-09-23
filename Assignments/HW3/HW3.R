@@ -66,6 +66,7 @@ add.constraint(lprec, c(0, 0, 1, 0, 1, 0, 0, 15, 0, 0, -750), ">=", 360)
 add.constraint(lprec, c(1, 0, 0, 0, 0, 1, 0, 0, 12, 900, 450), ">=", 300)
 add.constraint(lprec, c(0, 1, 0, 0, 0, 1, 0, 0, 12, -750, 0), ">=", 300)
 add.constraint(lprec, c(0, 0, 1, 0, 0, 1, 0, 0, 12, 0, -750), ">=", 300)
+set.bounds(lprec, lower = c(-Inf, -Inf), columns = 10:11)
 
 # Now, print out the model
 lprec
