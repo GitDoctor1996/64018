@@ -1,0 +1,92 @@
+---
+title: "HW6"
+author: "Nicholas Golina"
+date: "11/3/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+
+```{r}
+#install.packages("Benchmarking")
+library(Benchmarking)
+library(lpSolveAPI)
+```
+
+
+```{r}
+#1
+#Defining the matrices and the column names
+input1 <- matrix(c(150,400,320,520,350,320,0.2,0.7,1.2,2,1.2,0.7),ncol = 2)
+output <- matrix(c(14000,14000,42000,28000,19000,14000,3500,21000,10500,42000,25000,15000),ncol = 2)
+colnames(input1) <- c("Staff","Supplies")
+colnames(output) <- c("Reimbursed","Private")
+data_input <- cbind(input1, output)
+data_input
+```
+
+
+```{r}
+#Running the DEA Analysis 
+FDH <- dea(input1,output,RTS = "fdh") 
+FDH
+peers(FDH)                         
+lambda(FDH)
+
+CRS <- dea(input1,output,RTS = "crs") 
+CRS
+peers(CRS)                       
+lambda(CRS)
+
+VRS <- dea(input1,output,RTS = "vrs")  
+VRS
+peers(VRS)     
+lambda(VRS)
+
+IRS <- dea(input1,output,RTS = "irs")  
+IRS
+peers(IRS)  
+lambda(IRS)
+
+DRS <- dea(input1,output,RTS = "drs") 
+DRS
+peers(DRS)  
+lambda(DRS)
+
+FRH <- dea(input1,output,RTS = "add") 
+FRH
+peers(FRH) 
+lambda(FRH)
+
+```
+
+```{r}
+#Creating the data frame
+model <- data.frame(FDH=c(1, 1, 1, 1, 1, 1), CRS=c(1.0000, 1.0000, 1.0000, 1.0000, 0.9775, 0.8675), VRS=c(1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 0.8963), IRS=c(1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 0.8963), DRS=c(1.0000, 1.0000, 1.0000, 1.0000, 0.9775, 0.8675), FRH=c(1, 1, 1, 1, 1, 1))
+data_input <- cbind(data_input, model)
+data_input
+```
+
+```{r}
+#Compare the results: For FDH every variable was efficient. For CRS, every variable except 5 or 6 was efficient and the benchmarking for both was to 1,2, and 4. For VRS and IRS every variable except 6 was efficient and the benchmarking was to 1, 2, and 5. For DRS the only variables that were not efficient were 5 anf 6. The benchmarking was to 1, 2, and 4. For add, every variable was efficient.
+```
+
+```{r}
+#2
+gp <- read.lp("goal_p.lp")
+gp
+``` 
+
+
+```{r}
+solve(gp)
+get.objective(gp)
+get.variables(gp)
+```
+
+```{r}
+#x1 and x2 were the chosen inputs into the goal programming model. The objective function shows a net descrease.
+```
