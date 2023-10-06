@@ -1,0 +1,134 @@
+---
+title: "QMM Project"
+authors: Nick, Devesh, Harricka 
+output: html_notebook
+---
+
+```{r}
+library(dplyr)
+library(lpSolveAPI)
+library(ucminf)
+#library(Benchmarking)
+library(rDEA)
+library(expss)
+```
+
+```{r}
+feb_data <- read.csv("Master Data February 19.csv")
+mar_data <- read.csv("Master Data March 19.csv")
+data <- rbind(feb_data, mar_data)
+
+```
+
+```{r}
+data$Activity.Completed.Date <- as.Date(data$Activity.Completed.Date, "%m/%d/%Y")
+data$SR.Contact.Date <- as.Date(data$SR.Contact.Date, "%m/%d/%Y")
+data$diff_date <- as.integer(data$Activity.Completed.Date-data$SR.Contact.Date)
+data$Billed..Y.N. <- ifelse(data$Billed..Y.N. =="Y", 1, 0)
+```
+
+```{r}
+
+
+Trouble_Code <- data %>% 
+    group_by( Activity.Trouble.Code ) %>% na.omit()%>%
+    summarise( Avg_Repair_Hrs=mean(Regular.Repair.Hrs + Overtime.Repair.Hrs), Avg_Travel_Hrs=mean(Regular.Travel.Hrs + Overtime.Travel.Hrs), Avg_Wait_Hrs=mean(Overtime.Wait.Hrs + Regular.Wait.Hrs), Avg_Amount=mean(SR.Quoted.Amount....), Avg_Time=as.integer(mean(diff_date)), Perc_Billed=100*sum(Billed..Y.N.)/n(), Amt_Billed=sum(Billed..Y.N.*SR.Quoted.Amount....))
+
+State <- data %>% 
+    group_by( SR.State ) %>% na.omit()%>%
+    summarise( Avg_Repair_Hrs=mean(Regular.Repair.Hrs + Overtime.Repair.Hrs), Avg_Travel_Hrs=mean(Regular.Travel.Hrs + Overtime.Travel.Hrs), Avg_Wait_Hrs=mean(Overtime.Wait.Hrs + Regular.Wait.Hrs), Avg_Amount=mean(SR.Quoted.Amount....), Avg_Time=as.integer(mean(diff_date)), Perc_Billed=100*sum(Billed..Y.N.)/n(), Amt_Billed=sum(Billed..Y.N.*SR.Quoted.Amount....))
+
+Activity_Type <- data %>% 
+    group_by( Activity.Type ) %>% na.omit()%>%
+    summarise( Avg_Repair_Hrs=mean(Regular.Repair.Hrs + Overtime.Repair.Hrs), Avg_Travel_Hrs=mean(Regular.Travel.Hrs + Overtime.Travel.Hrs), Avg_Wait_Hrs=mean(Overtime.Wait.Hrs + Regular.Wait.Hrs), Avg_Amount=mean(SR.Quoted.Amount....), Avg_Time=as.integer(mean(diff_date)), Perc_Billed=100*sum(Billed..Y.N.)/n(), Amt_Billed=sum(Billed..Y.N.*SR.Quoted.Amount....))
+
+```
+
+```{r}
+#Activity Type
+x <- as.data.frame(Activity_Type[,c(2, 3, 4, 5)])
+    
+y <- as.data.frame(Activity_Type[,c(6, 7, 8)])
+
+DRS <- dea(XREF=x, YREF=y, X=x,Y=y,RTS = "vrs", model="output") 
+DRS
+
+```
+
+```{r}
+Activity_Type <- cbind(Activity_Type, DRS$thetaOpt)
+write.csv(Activity_Type,'C:\\Users\\nicho\\Google Drive\\School\\Graduate School\\Kent State\\Fall 2019\\Quantitative Management Modeling\\Final Project\\Activity_Type.csv', row.names = FALSE)
+```
+
+
+
+```{r}
+
+x <- as.data.frame(Activity_Type[,c(2, 3, 4, 5)])
+    
+y <- as.data.frame(Activity_Type[,c(6, 7, 8)])
+
+DRS <- dea(XREF=x, YREF=y, X=x,Y=y,RTS = "vrs", model="output")  
+DRS
+lambda(DRS)
+
+```
+
+```{r}
+#SR State
+x <- as.data.frame(State[,c(2, 3, 4, 5)])
+    
+y <- as.data.frame(State[,c(6, 7, 8)])
+
+DRS <- dea(XREF=x, YREF=y, X=x,Y=y,RTS = "crs", model="output") 
+DRS
+lambda(DRS)
+
+```
+
+```{r}
+
+x <- as.data.frame(State[,c(2, 3, 4, 5)])
+    
+y <- as.data.frame(State[,c(6, 7, 8)])
+
+DRS <- dea(XREF=x, YREF=y, X=x,Y=y,RTS = "vrs", model="output") 
+DRS
+
+```
+
+```{r}
+
+State <- cbind(State, DRS$thetaOpt)
+write.csv(State,'C:\\Users\\nicho\\Google Drive\\School\\Graduate School\\Kent State\\Fall 2019\\Quantitative Management Modeling\\Final Project\\State.csv', row.names = FALSE)
+
+```
+
+```{r}
+#Trouble Code
+x <- as.data.frame(Trouble_Code[,c(2, 3, 4, 5)])
+    
+y <- as.data.frame(Trouble_Code[,c(6, 7, 8)])
+
+DRS <- dea(XREF=x, YREF=y, X=x,Y=y,RTS = "crs", model="output")  
+DRS
+
+```
+
+```{r}
+
+x <- as.data.frame(Trouble_Code[,c(2, 3, 4, 5)])
+    
+y <- as.data.frame(Trouble_Code[,c(6, 7, 8)])
+
+DRS <- dea(XREF=x, YREF=y, X=x,Y=y,RTS = "vrs", model="output")  
+DRS
+
+```
+
+```{r}
+
+Trouble_Code <- cbind(Trouble_Code, DRS$thetaOpt)
+write.csv(Trouble_Code,'C:\\Users\\nicho\\Google Drive\\School\\Graduate School\\Kent State\\Fall 2019\\Quantitative Management Modeling\\Final Project\\Trouble_Code.csv', row.names = FALSE)
+
+```
